@@ -1,0 +1,15 @@
+# Configuration Constants
+WIDTH, HEIGHT = 800, 600
+ANT_COUNT = 100
+FOOD_COUNT = 50
+PHEROMONE_DECAY = 0.99
+PHEROMONE_STRENGTH = 10
+PHEROMONE_INFLUENCE = 0.2
+
+COLORS = {
+    'BLACK' : (0, 0, 0),
+    'WHITE' : (255, 255, 255),
+    'RED' : (255, 0, 0),
+    'GREEN' : (0, 255, 0),
+    'BLUE' : (0, 0, 255)
+}
