@@ -36,6 +36,10 @@ class Ant:
         if self.y <= 0 or self.y >= HEIGHT-1:
             self.direction = -self.direction
 
+        self.x = max(0, min(WIDTH - 1, self.x))
+        self.y = max(0, min(HEIGHT - 1, self.y))
+
+
     def drop_pheromone(self, pheromone_grid):
         if self.carrying_food:
             pheromone_grid[int(self.x)][int(self.y)] += PHEROMONE_STRENGTH
