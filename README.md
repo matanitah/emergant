@@ -30,15 +30,16 @@ _(Insert GIFs or screenshots of the simulation in action!)_
    ```
 
 ## ⚙️ **Features**  
-✅ Realistic ant behavior through **reinforcement learning**  
-✅ Pheromone-based pathfinding and **adaptive foraging**  
-✅ Natural selection shaping colonies over time  
 ✅ Fully interactive **visualization with PyGame**  
+✅ Ants seek out food and bring them back to their colonies
+✅ Pheromone tracking
+✅ Ant combat
+
 
 ## 🏗️ **Planned Features**  
-🚧 Multi-colony interactions and ant warfare  
+🚧 Multi-colony relatedness measure to allow for multi-colony cooperation or warfare  
 🚧 More complex environments (weather, terrain, obstacles)  
-🚧 Configurable evolution parameters  
+🚧 Use of selection or reinforcement learning to allow ants to learn to use pheromones autonomously
 
 ## 🤝 **Contribute**  
 Want to improve the simulation? Fork the repo, open an issue, or submit a pull request!  
