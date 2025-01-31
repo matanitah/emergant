@@ -2,7 +2,7 @@ import random
 import numpy as np
 from config.settings import WIDTH, HEIGHT, PHEROMONE_INFLUENCE, PHEROMONE_STRENGTH
 class Ant:
-    def __init__(self, colony):
+    def __init__(self, colony, colony_id):
         self.x = colony.x
         self.y = colony.y
         self.colony = colony
@@ -10,6 +10,8 @@ class Ant:
         self.colony_y = colony.y
         self.direction = random.uniform(0, 2 * np.pi)
         self.carrying_food = False
+        self.colony_id = colony_id
+        self.is_alive = True
 
     def move(self, pheromone_grid):
         if self.carrying_food:
@@ -53,7 +55,14 @@ class Ant:
                     food_sources.remove(food)
                 return
 
-    def check_colony(self):
-        if self.carrying_food and np.hypot(self.x - self.colony_x, self.y - self.colony_y) < 5:
-            self.colony.increment_food()
-            self.carrying_food = False
+    def check_colony(self, colony):
+        # If ant has returned to its own colony, drop off food.
+        if self.colony_id == colony.id:
+            if self.carrying_food and np.hypot(self.x - self.colony_x, self.y - self.colony_y) < 5:
+                self.colony.increment_food()
+                self.carrying_food = False
+        # If ant has reached the enemy colony, steal food.
+        else:
+            if self.carrying_food == False and np.hypot(self.x - colony.x, self.y - colony.y) < 5:
+                colony.decrement_food()
+                self.carrying_food = True

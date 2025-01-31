@@ -1,6 +1,8 @@
 # Configuration Constants
 WIDTH, HEIGHT = 800, 600
-ANT_COUNT = 100
+ANT_COUNT = 50
+MAX_ANTS_PER_COLONY = 100
+REPRODUCTION_COOLDOWN = 20
 FOOD_COUNT = 20
 PHEROMONE_DECAY = 0.99
 PHEROMONE_STRENGTH = 10
@@ -11,5 +13,9 @@ COLORS = {
     'WHITE' : (255, 255, 255),
     'RED' : (255, 0, 0),
     'GREEN' : (0, 255, 0),
-    'BLUE' : (0, 0, 255)
+    'BLUE' : (0, 0, 255),
+    'ORANGE': (255, 165, 0),
+    'BROWN': (165, 42, 42),
+    'YELLOW': (255, 255, 0),
+    'LIGHT_BLUE': (173, 216, 230),
 }
