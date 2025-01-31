@@ -1,4 +1,5 @@
 class Colony:
+    size = 10
     def __init__(self, x, y, id):
         self.id = id
         self.x = x

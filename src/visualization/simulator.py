@@ -68,7 +68,7 @@ class Simualator:
         # Check colony 1 reproduction
         if (len(self.ants1) < MAX_ANTS_PER_COLONY and
             current_time - self.last_reproduction[1] > REPRODUCTION_COOLDOWN and
-            self.colony1.food_count >= 2):  # Requires 2 food for reproduction
+            self.colony1.food_count >= 5):  # Requires 2 food for reproduction
             
             self.colony1.food_count -= 2
             new_ant = Ant(self.colony1, colony_id=1)
@@ -79,7 +79,7 @@ class Simualator:
         # Check colony 2 reproduction
         if (len(self.ants2) < MAX_ANTS_PER_COLONY and 
             current_time - self.last_reproduction[2] > REPRODUCTION_COOLDOWN and
-            self.colony2.food_count >= 2):  # Requires 2 food for reproduction
+            self.colony2.food_count >= 5):  # Requires 5 food for reproduction
             
             self.colony2.food_count -= 2
             new_ant = Ant(self.colony2, colony_id=2)
@@ -98,12 +98,12 @@ class Simualator:
                     self.screen.set_at((x, y), (intensity, intensity, intensity))
         
         # Draw both colonies
-        pygame.draw.circle(self.screen, COLORS['LIGHT_BLUE'], (self.colony1.x, self.colony1.y), 10)
-        pygame.draw.circle(self.screen, COLORS['RED'], (self.colony2.x, self.colony2.y), 10)
+        pygame.draw.circle(self.screen, COLORS['LIGHT_BLUE'], (self.colony1.x, self.colony1.y), Colony.size)
+        pygame.draw.circle(self.screen, COLORS['RED'], (self.colony2.x, self.colony2.y), Colony.size)
 
         # Draw food
         for food in self.food_sources:
-            pygame.draw.circle(self.screen, COLORS['YELLOW'], (food.x, food.y), food.size // 5)
+            pygame.draw.circle(self.screen, COLORS['YELLOW'], (food.x, food.y), food.size)
         
         # Draw ants with colony-specific colors
         for ant in self.ants:
