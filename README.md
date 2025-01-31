@@ -30,9 +30,12 @@ _(Insert GIFs or screenshots of the simulation in action!)_
    ```
 
 ## ⚙️ **Features**  
-✅ Fully interactive **visualization with PyGame**  
+✅ Fully interactive **visualization with PyGame**
+
 ✅ Ants seek out food and bring them back to their colonies
+
 ✅ Pheromone tracking
+
 ✅ Ant combat
 
 
