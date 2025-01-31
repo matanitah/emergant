@@ -33,7 +33,7 @@ class Simualator:
         self.ants = self.ants1 + self.ants2
 
         for ant in self.ants:
-            ant.move(self.pheromone_grid)
+            ant.move(self.pheromone_grid, self.food_sources)
             ant.check_food(self.food_sources)
             
             # Check for colony based on ant's colony_id
