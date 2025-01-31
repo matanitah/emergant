@@ -46,9 +46,11 @@ class Ant:
 
     def check_food(self, food_sources):
         for food in food_sources:
-            if not self.carrying_food and np.hypot(self.x - food.x, self.y - food.y) < 5:
+            if not self.carrying_food and np.hypot(self.x - food.x, self.y - food.y) < food.size // 5:
                 self.carrying_food = True
-                food_sources.remove(food)
+                food.size -= 1
+                if food.size <= 0:
+                    food_sources.remove(food)
                 return
 
     def check_colony(self):

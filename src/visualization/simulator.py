@@ -42,7 +42,7 @@ class Simualator:
 
         # Draw food
         for food in self.food_sources:
-            pygame.draw.circle(self.screen, COLORS['GREEN'], (food.x, food.y), 5)
+            pygame.draw.circle(self.screen, COLORS['GREEN'], (food.x, food.y), food.size // 5)
         
         # Draw ants
         for ant in self.ants:
