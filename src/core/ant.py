@@ -3,36 +3,6 @@ import numpy as np
 from config.settings import WIDTH, HEIGHT, PHEROMONE_INFLUENCE, PHEROMONE_STRENGTH
 from core.colony import Colony
 
-class NeuralNetwork:
-    def __init__(self, input_size, hidden_size, output_size):
-        # Initialize a simple feedforward neural network with one hidden layer
-        # The network architecture is: input_layer -> hidden_layer -> output_layer
-        
-        # weights1: Connects input layer to hidden layer
-        # Initialized with small random values (scaled by 0.1) to prevent extreme initial behaviors
-        self.weights1 = np.random.randn(input_size, hidden_size) * 0.1
-        
-        # weights2: Connects hidden layer to output layer
-        # Initialized with small random values (scaled by 0.1) to prevent extreme initial behaviors
-        self.weights2 = np.random.randn(hidden_size, output_size) * 0.1
-        
-    def forward(self, x):
-        # Forward pass through the network
-        # Uses tanh activation function for both layers to output values between -1 and 1
-        
-        # Process through hidden layer
-        self.hidden = np.tanh(np.dot(x, self.weights1))
-        # Process through output layer
-        self.output = np.tanh(np.dot(self.hidden, self.weights2))
-        return self.output
-    
-    def update(self, learning_rate, gradient):
-        # Simple gradient update for reinforcement learning
-        # Only updates the output layer weights (weights2) based on the reward signal
-        # learning_rate: Controls how much the weights change in response to errors
-        # gradient: Computed based on the reward history and action history
-        self.weights2 += learning_rate * gradient
-        
 class Ant:
     def __init__(self, colony, colony_id):
         self.x = colony.x
@@ -44,12 +14,7 @@ class Ant:
         self.carrying_food = False
         self.colony_id = colony_id
         self.is_alive = True
-        
-        # Neural network parameters
-        self.input_size = 7  # State observations
-        self.hidden_size = 8
-        self.output_size = 3  # [turn_left, turn_right, drop_pheromone]
-        self.brain = NeuralNetwork(self.input_size, self.hidden_size, self.output_size)
+        self.brain = colony.hivemind
         
         # Learning parameters
         self.learning_rate = 0.01
@@ -115,7 +80,7 @@ class Ant:
         self.reward_history.append(reward)
         
         # Learn from experience periodically
-        if len(self.reward_history) >= 50:
+        if len(self.reward_history) >= 5:
             self.learn()
 
     def calculate_reward(self):

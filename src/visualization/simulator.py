@@ -45,7 +45,7 @@ class Simualator:
             ant.drop_pheromone(self.pheromone_grid)
             
             # Combat: Check for nearby enemy ants
-            self.check_combat(ant)
+            # self.check_combat(ant)
         self.handle_reproduction()
         self.pheromone_grid *= PHEROMONE_DECAY  # Pheromones decay over time
 
