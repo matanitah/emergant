@@ -36,11 +36,9 @@ class Simualator:
             ant.move(self.pheromone_grid, self.food_sources)
             ant.check_food(self.food_sources)
             
-            # Check for colony based on ant's colony_id
-            if ant.colony_id == 1:
-                ant.check_colony(self.colony1)
-            else:
-                ant.check_colony(self.colony2)
+            # Check for colonies nearby
+            ant.check_colony(self.colony1)
+            ant.check_colony(self.colony2)
                 
             ant.drop_pheromone(self.pheromone_grid)
             
