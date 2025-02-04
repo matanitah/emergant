@@ -66,9 +66,9 @@ class Simualator:
         # Check colony 1 reproduction
         if (len(self.ants1) < MAX_ANTS_PER_COLONY and
             current_time - self.last_reproduction[1] > REPRODUCTION_COOLDOWN and
-            self.colony1.food_count >= 5):  # Requires 2 food for reproduction
+            self.colony1.food_count >= 5):  # Requires 5 food for reproduction
             
-            self.colony1.food_count -= 2
+            self.colony1.food_count -= 5
             new_ant = Ant(self.colony1, colony_id=1)
             self.ants1.append(new_ant)
             self.ants = self.ants1 + self.ants2
@@ -79,7 +79,7 @@ class Simualator:
             current_time - self.last_reproduction[2] > REPRODUCTION_COOLDOWN and
             self.colony2.food_count >= 5):  # Requires 5 food for reproduction
             
-            self.colony2.food_count -= 2
+            self.colony2.food_count -= 5
             new_ant = Ant(self.colony2, colony_id=2)
             self.ants2.append(new_ant)
             self.ants = self.ants1 + self.ants2
