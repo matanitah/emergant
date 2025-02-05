@@ -6,10 +6,12 @@ class Colony:
         self.x = x
         self.y = y
         self.food_count = 0
+        self.total_food_collected = 0
         self.hivemind = NeuralNetwork()
     
     def increment_food(self):
         self.food_count += 1
+        self.total_food_collected += 1
         
     def decrement_food(self):
         self.food_count -= 1
