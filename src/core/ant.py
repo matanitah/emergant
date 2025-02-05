@@ -39,14 +39,19 @@ class Ant:
             check_y = min(HEIGHT - 1, max(0, int(self.y + np.sin(self.direction + angle) * 5)))
             pheromone_levels[i] = pheromone_grid[check_x][check_y] / PHEROMONE_STRENGTH
             
-        # 7. Distance to nearest food
-        min_food_dist = 1.0
+        # 7-8. Distance and angle to nearest food (increased sight range to 50 units)
+        min_food_dist = 1.0  # Default when no food is in sight
+        angle_to_food = 0.0  # Default when no food is in sight
         for food in food_sources:
-            dist = np.hypot(self.x - food.x, self.y - food.y) / np.hypot(WIDTH, HEIGHT)
-            min_food_dist = min(min_food_dist, dist)
+            dist = np.hypot(self.x - food.x, self.y - food.y)
+            if dist < 50:  # Increased detection range to 50 units
+                normalized_dist = dist / 50.0  # Normalize relative to sight range instead of map size
+                if normalized_dist < min_food_dist:
+                    min_food_dist = normalized_dist
+                    angle_to_food = (np.arctan2(food.y - self.y, food.x - self.x) - self.direction) / (2 * np.pi)
             
         return np.array([dist_to_colony, angle_to_colony, carrying_food, 
-                        *pheromone_levels, min_food_dist])
+                        *pheromone_levels, min_food_dist, angle_to_food])
 
     def move(self, pheromone_grid, food_sources):
         # Get current state
@@ -88,15 +93,15 @@ class Ant:
         
         # Reward for picking up food
         if self.carrying_food:
-            reward += 0.1
+            reward += 1.0
             
         # Reward for successfully returning food to colony
         if self.carrying_food and np.hypot(self.x - self.colony_x, self.y - self.colony_y) < Colony.size:
-            reward += 1.0
+            reward += 10.0
             
         # Small penalty for wandering too far from colony
         dist_to_colony = np.hypot(self.x - self.colony_x, self.y - self.colony_y)
-        reward -= 0.001 * (dist_to_colony / np.hypot(WIDTH, HEIGHT))
+        reward -= 0.05 * (dist_to_colony / np.hypot(WIDTH, HEIGHT))
         
         return reward
 
