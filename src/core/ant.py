@@ -91,8 +91,8 @@ class Ant:
     def calculate_reward(self):
         reward = 0
         
-        # Reward for picking up food
-        if self.carrying_food:
+        # Reward for picking up food (only when first picked up)
+        if self.carrying_food and len(self.reward_history) > 0 and self.reward_history[-1] <= 0:
             reward += 1.0
             
         # Reward for successfully returning food to colony
