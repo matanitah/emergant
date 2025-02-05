@@ -1,5 +1,5 @@
-from visualization.simulator import Simualator
+from visualization.simulator import Simulator
 
 if __name__ == "__main__":
-    sim = Simualator()
+    sim = Simulator()
     sim.run()

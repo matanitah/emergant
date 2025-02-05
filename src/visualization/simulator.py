@@ -6,9 +6,10 @@ from config.settings import WIDTH, HEIGHT, ANT_COUNT, FOOD_COUNT, PHEROMONE_DECA
 from core.ant import Ant
 from core.food import Food
 from core.colony import Colony
-class Simualator:
+class Simulator:
     def __init__(self):
         pygame.init()
+        pygame.font.init()
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.clock = pygame.time.Clock()
         self.last_reproduction = {
@@ -99,6 +100,13 @@ class Simualator:
         pygame.draw.circle(self.screen, COLORS['LIGHT_BLUE'], (self.colony1.x, self.colony1.y), Colony.size)
         pygame.draw.circle(self.screen, COLORS['RED'], (self.colony2.x, self.colony2.y), Colony.size)
 
+        # Display food counts
+        font = pygame.font.Font(None, 36)
+        colony1_text = font.render(f"Colony 1: {self.colony1.total_food_collected}", True, COLORS['LIGHT_BLUE'])
+        colony2_text = font.render(f"Colony 2: {self.colony2.total_food_collected}", True, COLORS['RED'])
+        self.screen.blit(colony1_text, (10, 10))  # Top left
+        self.screen.blit(colony2_text, (10, 50))  # Below colony 1 text
+        
         # Draw food
         for food in self.food_sources:
             pygame.draw.circle(self.screen, COLORS['YELLOW'], (food.x, food.y), food.size)
