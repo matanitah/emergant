@@ -126,9 +126,27 @@ class Simulator:
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.save_weights()
                     self.running = False
             
             self.update()
             self.draw()
 
         pygame.quit()
+
+    def save_weights(self):
+        """Saves the neural network weights for both colonies to text files."""
+        # Create weights directory if it doesn't exist
+        os.makedirs('weights', exist_ok=True)
+        
+        # Save weights for colony 1
+        with open(f'weights/colony1_weights.txt', 'w') as f:
+            f.write("Weights1:\n" + str(self.colony1.hivemind.weights1.tolist()) + "\n")
+            f.write("Weights2:\n" + str(self.colony1.hivemind.weights2.tolist()) + "\n")
+            f.write("Weights3:\n" + str(self.colony1.hivemind.weights3.tolist()))
+            
+        # Save weights for colony 2
+        with open(f'weights/colony2_weights.txt', 'w') as f:
+            f.write("Weights1:\n" + str(self.colony2.hivemind.weights1.tolist()) + "\n")
+            f.write("Weights2:\n" + str(self.colony2.hivemind.weights2.tolist()) + "\n")
+            f.write("Weights3:\n" + str(self.colony2.hivemind.weights3.tolist()))
