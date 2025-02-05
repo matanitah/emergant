@@ -80,7 +80,7 @@ class Ant:
         self.reward_history.append(reward)
         
         # Learn from experience periodically
-        if len(self.reward_history) >= 5:
+        if len(self.reward_history) >= 100:
             self.learn()
 
     def calculate_reward(self):
