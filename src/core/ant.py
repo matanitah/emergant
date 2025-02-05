@@ -99,9 +99,10 @@ class Ant:
         if self.carrying_food and np.hypot(self.x - self.colony_x, self.y - self.colony_y) < Colony.size:
             reward += 10.0
             
-        # Small penalty for wandering too far from colony
-        dist_to_colony = np.hypot(self.x - self.colony_x, self.y - self.colony_y)
-        reward -= 0.05 * (dist_to_colony / np.hypot(WIDTH, HEIGHT))
+        # Small penalty for wandering too far from colony while carrying food
+        if self.carrying_food:
+            dist_to_colony = np.hypot(self.x - self.colony_x, self.y - self.colony_y)
+            reward -= 0.05 * (dist_to_colony / np.hypot(WIDTH, HEIGHT))
         
         return reward
 
