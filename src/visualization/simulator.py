@@ -19,6 +19,9 @@ class Simulator:
         self.colony1 = Colony(WIDTH // 4, HEIGHT // 2, 1)  # Left side
         self.colony2 = Colony(3 * WIDTH // 4, HEIGHT // 2, 2)  # Right side
 
+        # Load weights before creating ants
+        self.load_weights()
+
         self.ants1 = [Ant(self.colony1, colony_id=1) for _ in range(ANT_COUNT // 2)]
         self.ants2 = [Ant(self.colony2, colony_id=2) for _ in range(ANT_COUNT // 2)]
         self.ants = self.ants1 + self.ants2  # Combined list for easier iteration
@@ -150,3 +153,44 @@ class Simulator:
             f.write("Weights1:\n" + str(self.colony2.hivemind.weights1.tolist()) + "\n")
             f.write("Weights2:\n" + str(self.colony2.hivemind.weights2.tolist()) + "\n")
             f.write("Weights3:\n" + str(self.colony2.hivemind.weights3.tolist()))
+
+    def load_weights(self):
+        """Loads neural network weights for both colonies from text files."""
+        try:
+            # Load weights for colony 1
+            with open('weights/colony1_weights.txt', 'r') as f:
+                content = f.read()
+                # Extract each weight matrix
+                for i, prefix in enumerate(['Weights1:', 'Weights2:', 'Weights3:']):
+                    start = content.find(prefix) + len(prefix)
+                    end = content.find('Weights', start) if i < 2 else len(content)
+                    weight_str = content[start:end].strip()
+                    weight_matrix = np.array(eval(weight_str))
+                    if i == 0:
+                        self.colony1.hivemind.weights1 = weight_matrix
+                    elif i == 1:
+                        self.colony1.hivemind.weights2 = weight_matrix
+                    else:
+                        self.colony1.hivemind.weights3 = weight_matrix
+
+            # Load weights for colony 2
+            with open('weights/colony2_weights.txt', 'r') as f:
+                content = f.read()
+                # Extract each weight matrix
+                for i, prefix in enumerate(['Weights1:', 'Weights2:', 'Weights3:']):
+                    start = content.find(prefix) + len(prefix)
+                    end = content.find('Weights', start) if i < 2 else len(content)
+                    weight_str = content[start:end].strip()
+                    weight_matrix = np.array(eval(weight_str))
+                    if i == 0:
+                        self.colony2.hivemind.weights1 = weight_matrix
+                    elif i == 1:
+                        self.colony2.hivemind.weights2 = weight_matrix
+                    else:
+                        self.colony2.hivemind.weights3 = weight_matrix
+                        
+        except FileNotFoundError:
+            print("No weights files found. Starting with random weights.")
+        except Exception as e:
+            print(f"Error loading weights: {e}")
+            print("Starting with random weights.")
