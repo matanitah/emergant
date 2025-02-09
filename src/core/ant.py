@@ -1,6 +1,6 @@
 import random
 import numpy as np
-from config.settings import WIDTH, HEIGHT, PHEROMONE_INFLUENCE, PHEROMONE_STRENGTH
+from config.settings import *
 from core.colony import Colony
 
 class Ant:
@@ -17,7 +17,6 @@ class Ant:
         self.brain = colony.hivemind
         
         # Learning parameters
-        self.learning_rate = 0.01
         self.reward_history = []
         self.action_history = []
 
@@ -44,8 +43,8 @@ class Ant:
         angle_to_food = 0.0  # Default when no food is in sight
         for food in food_sources:
             dist = np.hypot(self.x - food.x, self.y - food.y)
-            if dist < 50:  # Detection range of 50
-                normalized_dist = dist / 50.0  # Ranges normalized distance from 1 to 0
+            if dist < ANT_RANGE_OF_SIGHT:
+                normalized_dist = dist / ANT_RANGE_OF_SIGHT  # Ranges normalized distance from 1 to 0
                 if normalized_dist < min_food_dist:
                     min_food_dist = normalized_dist
                     angle_to_food = (np.arctan2(food.y - self.y, food.x - self.x) - self.direction) / (2 * np.pi) # Range normalized from -0.5 to 0.5
@@ -69,14 +68,14 @@ class Ant:
         turn_left, turn_right, drop_pheromone = actions
 
         if drop_pheromone:
-            self.drop_pheromones()
+            self.drop_pheromones(pheromone_grid)
         
         # Update direction based on neural network output
         self.direction += 0.3 * (turn_right - turn_left)
         
         # Update position
-        self.x += np.cos(self.direction) * 2
-        self.y += np.sin(self.direction) * 2
+        self.x += np.cos(self.direction) * ANT_SPEED
+        self.y += np.sin(self.direction) * ANT_SPEED
         
         # Keep ants within bounds
         if self.x <= 0 or self.x >= WIDTH-1:
@@ -92,7 +91,7 @@ class Ant:
         self.reward_history.append(reward)
         
         # Learn from experience periodically
-        if len(self.reward_history) >= 10:
+        if len(self.reward_history) >= REWARD_RATE:
             self.learn()
 
     def calculate_reward(self, food_sources, pheromone_grid):
@@ -123,14 +122,14 @@ class Ant:
             min_food_dist = float('inf')
             for food in food_sources:
                 dist = np.hypot(self.x - food.x, self.y - food.y)
-                if dist < 50:  # Only consider food within sight range
+                if dist < ANT_RANGE_OF_SIGHT:  # Only consider food within sight range
                     min_food_dist = min(min_food_dist, dist)
             
             # If food is visible, compare distance to previous distance
             if min_food_dist < float('inf'):
                 if len(self.reward_history) > 0:
                     prev_state = self.get_state(pheromone_grid, food_sources)
-                    prev_food_dist = prev_state[6] * 50  # Unnormalize the distance
+                    prev_food_dist = prev_state[6] * ANT_RANGE_OF_SIGHT  # Unnormalize the distance
                     dist_improvement = prev_food_dist - min_food_dist
                     reward += 0.1 * dist_improvement  # Small reward for getting closer to food
         
@@ -142,11 +141,11 @@ class Ant:
         actions = np.array(self.action_history)
         
         # Normalize rewards
-        rewards = (rewards - np.mean(rewards)) / (np.std(rewards) + 1e-10)
+        rewards = (rewards - np.mean(rewards)) / (np.std(rewards) + REWARD_NORMALIZER)
         
         # Calculate gradients and update network
         gradient = np.mean(actions * rewards[:, np.newaxis], axis=0)
-        self.brain.update(self.learning_rate, gradient)
+        self.brain.update(LEARNING_RATE, gradient)
         
         # Clear history
         self.reward_history = []
@@ -193,8 +192,7 @@ class Ant:
             
     #         for food in food_sources:
     #             distance = np.hypot(self.x - food.x, self.y - food.y)
-    #             # Ants can see food within 50 units
-    #             if distance < 50 and distance < min_distance:
+    #             if distance < ANT_RANGE_OF_SIGHT and distance < min_distance:
     #                 closest_food = food
     #                 min_distance = distance
             
