@@ -1,6 +1,6 @@
 import numpy as np
 class NeuralNetwork:
-    def __init__(self, hidden_size1=8, hidden_size2=8):
+    def __init__(self, hidden_size1, hidden_size2):
         input_size = 8  # State observations
         output_size = 3  # [turn_left, turn_right, drop_pheromone]
 
