@@ -23,7 +23,7 @@ class Ant:
 
     def get_state(self, pheromone_grid, food_sources):
         # Create state vector for neural network input
-        # 1. Distance to colony
+        # 1. Distance to colony (normalized)
         dist_to_colony = np.hypot(self.x - self.colony_x, self.y - self.colony_y) / np.hypot(WIDTH, HEIGHT)
         
         # 2. Angle to colony (normalized)
@@ -34,21 +34,21 @@ class Ant:
         
         # 4-6. Pheromone levels in three directions
         pheromone_levels = np.zeros(3)
-        for i, angle in enumerate([0, 0.5, -0.5]):
+        for i, angle in enumerate([0, 0.5, -0.5]): # Checks straight ahead, 0.5 radians left, and 0.5 radians right
             check_x = min(WIDTH - 1, max(0, int(self.x + np.cos(self.direction + angle) * 5)))
             check_y = min(HEIGHT - 1, max(0, int(self.y + np.sin(self.direction + angle) * 5)))
             pheromone_levels[i] = pheromone_grid[check_x][check_y] / PHEROMONE_STRENGTH
             
-        # 7-8. Distance and angle to nearest food (increased sight range to 50 units)
+        # 7-8. Distance and angle to nearest food within sight range
         min_food_dist = 1.0  # Default when no food is in sight
         angle_to_food = 0.0  # Default when no food is in sight
         for food in food_sources:
             dist = np.hypot(self.x - food.x, self.y - food.y)
-            if dist < 50:  # Increased detection range to 50 units
-                normalized_dist = dist / 50.0  # Normalize relative to sight range instead of map size
+            if dist < 50:  # Detection range of 50
+                normalized_dist = dist / 50.0  # Ranges normalized distance from 1 to 0
                 if normalized_dist < min_food_dist:
                     min_food_dist = normalized_dist
-                    angle_to_food = (np.arctan2(food.y - self.y, food.x - self.x) - self.direction) / (2 * np.pi)
+                    angle_to_food = (np.arctan2(food.y - self.y, food.x - self.x) - self.direction) / (2 * np.pi) # Range normalized from -0.5 to 0.5
             
         return np.array([dist_to_colony, angle_to_colony, carrying_food, 
                         *pheromone_levels, min_food_dist, angle_to_food])
@@ -61,12 +61,15 @@ class Ant:
         actions = self.brain.forward(state)
         self.action_history.append(actions)
         
-        # Add random exploration (epsilon-greedy approach)?
+        # Add random exploration (epsilon-greedy approach)
         if random.random() < 0.1:  # 10% chance of random movement
             actions = np.random.uniform(-1, 1, 3)
         
-        # Apply actions with momentum and reduced turn rate
+        # Apply actions
         turn_left, turn_right, drop_pheromone = actions
+
+        if drop_pheromone:
+            self.drop_pheromones()
         
         # Update direction based on neural network output
         self.direction += 0.3 * (turn_right - turn_left)
@@ -149,10 +152,8 @@ class Ant:
         self.reward_history = []
         self.action_history = []
 
-    def drop_pheromone(self, pheromone_grid):
-        # Only drop pheromone if neural network suggests it
-        if self.action_history and self.action_history[-1][2] > 0:
-            pheromone_grid[int(self.x)][int(self.y)] += PHEROMONE_STRENGTH
+    def drop_pheromones(self, pheromone_grid):
+        pheromone_grid[int(self.x)][int(self.y)] += PHEROMONE_STRENGTH
 
     def check_food(self, food_sources):
         for food in food_sources:
