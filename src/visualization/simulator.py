@@ -43,9 +43,7 @@ class Simulator:
             # Check for colonies nearby
             ant.check_colony(self.colony1)
             ant.check_colony(self.colony2)
-                
-            ant.drop_pheromone(self.pheromone_grid)
-            
+                        
             # Combat: Check for nearby enemy ants
             # self.check_combat(ant)
         self.handle_reproduction()

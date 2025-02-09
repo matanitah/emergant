@@ -177,6 +177,8 @@ class Ant:
                 self.carrying_food = True
 
 
+
+    # SCRIPTED HEURISTIC BASED MOVEMENT METHOD
     # def move(self, pheromone_grid, food_sources):
     #     if self.carrying_food:
     #         # When carrying food, head back to colony
