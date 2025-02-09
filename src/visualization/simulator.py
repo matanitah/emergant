@@ -2,7 +2,7 @@ import os
 import pygame
 import random
 import numpy as np
-from config.settings import WIDTH, HEIGHT, ANT_COUNT, FOOD_COUNT, PHEROMONE_DECAY, COLORS, MAX_ANTS_PER_COLONY, REPRODUCTION_COOLDOWN
+from config.settings import WIDTH, HEIGHT, ANT_COUNT_PER_COLONY, FOOD_COUNT, PHEROMONE_DECAY, COLORS, MAX_ANTS_PER_COLONY, REPRODUCTION_COOLDOWN
 from core.ant import Ant
 from core.food import Food
 from core.colony import Colony
@@ -22,8 +22,8 @@ class Simulator:
         # Load weights before creating ants
         self.load_weights()
 
-        self.ants1 = [Ant(self.colony1, colony_id=1) for _ in range(ANT_COUNT // 2)]
-        self.ants2 = [Ant(self.colony2, colony_id=2) for _ in range(ANT_COUNT // 2)]
+        self.ants1 = [Ant(self.colony1, colony_id=1) for _ in range(ANT_COUNT_PER_COLONY)]
+        self.ants2 = [Ant(self.colony2, colony_id=2) for _ in range(ANT_COUNT_PER_COLONY)]
         self.ants = self.ants1 + self.ants2  # Combined list for easier iteration
 
         self.food_sources = [Food() for _ in range(FOOD_COUNT)]
