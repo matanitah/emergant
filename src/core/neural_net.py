@@ -1,9 +1,7 @@
 import numpy as np
 class NeuralNetwork:
-    def __init__(self):
+    def __init__(self, hidden_size1=8, hidden_size2=8):
         input_size = 8  # State observations
-        hidden_size1 = 8  # Size of first hidden layer
-        hidden_size2 = 8  # Size of second hidden layer
         output_size = 3  # [turn_left, turn_right, drop_pheromone]
 
         # Initialize a feedforward neural network with two hidden layers

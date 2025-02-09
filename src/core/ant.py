@@ -61,7 +61,11 @@ class Ant:
         actions = self.brain.forward(state)
         self.action_history.append(actions)
         
-        # Apply actions
+        # Add random exploration (epsilon-greedy approach)?
+        if random.random() < 0.1:  # 10% chance of random movement
+            actions = np.random.uniform(-1, 1, 3)
+        
+        # Apply actions with momentum and reduced turn rate
         turn_left, turn_right, drop_pheromone = actions
         
         # Update direction based on neural network output
@@ -81,14 +85,14 @@ class Ant:
         self.y = max(0, min(HEIGHT - 1, self.y))
         
         # Calculate reward
-        reward = self.calculate_reward()
+        reward = self.calculate_reward(food_sources, pheromone_grid)
         self.reward_history.append(reward)
         
         # Learn from experience periodically
-        if len(self.reward_history) >= 100:
+        if len(self.reward_history) >= 10:
             self.learn()
 
-    def calculate_reward(self):
+    def calculate_reward(self, food_sources, pheromone_grid):
         reward = 0
         
         # Reward for picking up food (only when first picked up)
@@ -103,6 +107,29 @@ class Ant:
         if self.carrying_food:
             dist_to_colony = np.hypot(self.x - self.colony_x, self.y - self.colony_y)
             reward -= 0.05 * (dist_to_colony / np.hypot(WIDTH, HEIGHT))
+            
+            # Reward for getting closer to colony while carrying food
+            if len(self.reward_history) > 0:
+                prev_state = self.get_state(pheromone_grid, food_sources)
+                prev_colony_dist = prev_state[0] * np.hypot(WIDTH, HEIGHT)  # Unnormalize the distance
+                dist_improvement = prev_colony_dist - dist_to_colony
+                reward += 0.2 * dist_improvement  # Reward for getting closer to colony
+        
+        # Reward for getting closer to visible food when not carrying any
+        if not self.carrying_food:
+            min_food_dist = float('inf')
+            for food in food_sources:
+                dist = np.hypot(self.x - food.x, self.y - food.y)
+                if dist < 50:  # Only consider food within sight range
+                    min_food_dist = min(min_food_dist, dist)
+            
+            # If food is visible, compare distance to previous distance
+            if min_food_dist < float('inf'):
+                if len(self.reward_history) > 0:
+                    prev_state = self.get_state(pheromone_grid, food_sources)
+                    prev_food_dist = prev_state[6] * 50  # Unnormalize the distance
+                    dist_improvement = prev_food_dist - min_food_dist
+                    reward += 0.1 * dist_improvement  # Small reward for getting closer to food
         
         return reward
 
