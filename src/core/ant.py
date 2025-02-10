@@ -99,16 +99,16 @@ class Ant:
         
         # Reward for picking up food (only when first picked up)
         if self.carrying_food and len(self.reward_history) > 0 and self.reward_history[-1] <= 0:
-            reward += 1.0
+            reward += 10.0
             
         # Reward for successfully returning food to colony
         if self.carrying_food and np.hypot(self.x - self.colony_x, self.y - self.colony_y) < Colony.size:
-            reward += 10.0
+            reward += 100.0
             
         # Small penalty for wandering too far from colony while carrying food
         if self.carrying_food:
             dist_to_colony = np.hypot(self.x - self.colony_x, self.y - self.colony_y)
-            reward -= 0.05 * (dist_to_colony / np.hypot(WIDTH, HEIGHT))
+            reward -= 0.2 * (dist_to_colony / np.hypot(WIDTH, HEIGHT))
             
             # Reward for getting closer to colony while carrying food
             if len(self.reward_history) > 0:
