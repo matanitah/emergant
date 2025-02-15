@@ -189,8 +189,8 @@ class Ant:
         # If ant has reached the enemy colony, steal food.
         else:
             if self.carrying_food == False and np.hypot(self.x - colony.x, self.y - colony.y) < Colony.size:
-                colony.decrement_food()
-                self.carrying_food = True
+                if colony.decrement_food():
+                    self.carrying_food = True
 
 
 

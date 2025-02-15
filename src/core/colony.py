@@ -14,4 +14,8 @@ class Colony:
         self.total_food_collected += 1
         
     def decrement_food(self):
-        self.food_count -= 1
+        if self.food_count > 0:
+            self.food_count -= 1
+            return True
+        else:
+            return False
