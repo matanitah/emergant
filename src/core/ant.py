@@ -62,12 +62,12 @@ class Ant:
         
         # Add random exploration (epsilon-greedy approach)
         if random.random() < 0.1:  # 10% chance of random movement
-            actions = np.random.uniform(-1, 1, 3)
+            actions = np.random.uniform(-1, 1, 2)
         
         # Apply actions
-        turn_left, turn_right, drop_pheromone = actions
+        turn_left, turn_right = actions
 
-        if drop_pheromone:
+        if self.carrying_food:
             self.drop_pheromones(pheromone_grid)
         
         # Update direction based on neural network output
