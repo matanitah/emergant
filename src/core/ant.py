@@ -105,33 +105,50 @@ class Ant:
         if self.carrying_food and np.hypot(self.x - self.colony_x, self.y - self.colony_y) < Colony.size:
             reward += 100.0
             
-        # Small penalty for wandering too far from colony while carrying food
+        # When carrying food: reward/penalty based on angle to colony
         if self.carrying_food:
+            # Get angle to colony relative to current direction
+            angle_to_colony = np.arctan2(self.colony_y - self.y, self.colony_x - self.x)
+            angle_diff = abs(((angle_to_colony - self.direction + np.pi) % (2 * np.pi)) - np.pi)
+            
+            # Reward for facing towards colony (angle_diff close to 0)
+            # Penalty for facing away (angle_diff close to pi)
+            angle_reward = (np.pi - angle_diff) / np.pi  # Ranges from 1 (facing colony) to -1 (facing away)
+            reward += 0.5 * angle_reward
+            
+            # Existing distance-based penalties/rewards
             dist_to_colony = np.hypot(self.x - self.colony_x, self.y - self.colony_y)
             reward -= 0.2 * (dist_to_colony / np.hypot(WIDTH, HEIGHT))
             
-            # Reward for getting closer to colony while carrying food
             if len(self.reward_history) > 0:
                 prev_state = self.get_state(pheromone_grid, food_sources)
                 prev_colony_dist = prev_state[0] * np.hypot(WIDTH, HEIGHT)  # Unnormalize the distance
                 dist_improvement = prev_colony_dist - dist_to_colony
                 reward += 0.2 * dist_improvement  # Reward for getting closer to colony
         
-        # Reward for getting closer to visible food when not carrying any
-        if not self.carrying_food:
+        # When not carrying food: reward/penalty based on angle to nearest visible food
+        else:
             min_food_dist = float('inf')
+            best_angle_to_food = None
+            
             for food in food_sources:
                 dist = np.hypot(self.x - food.x, self.y - food.y)
-                if dist < ANT_RANGE_OF_SIGHT:  # Only consider food within sight range
-                    min_food_dist = min(min_food_dist, dist)
+                if dist < ANT_RANGE_OF_SIGHT and dist < min_food_dist:
+                    min_food_dist = dist
+                    best_angle_to_food = np.arctan2(food.y - self.y, food.x - self.x)
             
-            # If food is visible, compare distance to previous distance
-            if min_food_dist < float('inf'):
+            if best_angle_to_food is not None:
+                # Calculate angle difference and reward/penalty
+                angle_diff = abs(((best_angle_to_food - self.direction + np.pi) % (2 * np.pi)) - np.pi)
+                angle_reward = (np.pi - angle_diff) / np.pi
+                reward += 0.3 * angle_reward  # Smaller reward multiplier than colony-seeking
+                
+                # Existing distance improvement reward
                 if len(self.reward_history) > 0:
                     prev_state = self.get_state(pheromone_grid, food_sources)
-                    prev_food_dist = prev_state[6] * ANT_RANGE_OF_SIGHT  # Unnormalize the distance
+                    prev_food_dist = prev_state[6] * ANT_RANGE_OF_SIGHT
                     dist_improvement = prev_food_dist - min_food_dist
-                    reward += 0.1 * dist_improvement  # Small reward for getting closer to food
+                    reward += 0.1 * dist_improvement
         
         return reward
 
