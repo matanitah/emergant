@@ -118,7 +118,7 @@ class Ant:
             
             # Existing distance-based penalties/rewards
             dist_to_colony = np.hypot(self.x - self.colony_x, self.y - self.colony_y)
-            reward -= 0.2 * (dist_to_colony / np.hypot(WIDTH, HEIGHT))
+            reward -= 0.1 * (dist_to_colony / np.hypot(WIDTH, HEIGHT))
             
             if len(self.reward_history) > 0:
                 prev_state = self.get_state(pheromone_grid, food_sources)
@@ -141,14 +141,14 @@ class Ant:
                 # Calculate angle difference and reward/penalty
                 angle_diff = abs(((best_angle_to_food - self.direction + np.pi) % (2 * np.pi)) - np.pi)
                 angle_reward = (np.pi - angle_diff) / np.pi
-                reward += 0.3 * angle_reward  # Smaller reward multiplier than colony-seeking
+                reward += 0.5 * angle_reward
                 
-                # Existing distance improvement reward
+                # Distance improvement reward
                 if len(self.reward_history) > 0:
                     prev_state = self.get_state(pheromone_grid, food_sources)
                     prev_food_dist = prev_state[6] * ANT_RANGE_OF_SIGHT
                     dist_improvement = prev_food_dist - min_food_dist
-                    reward += 0.1 * dist_improvement
+                    reward += 0.2 * dist_improvement
         
         return reward
 

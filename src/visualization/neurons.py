@@ -50,7 +50,7 @@ class NeuronVisualizer:
                 weights[f'colony{colony}'] = [
                     np.zeros((8, 8)),
                     np.zeros((8, 8)),
-                    np.zeros((8, 3))
+                    np.zeros((8, 2))
                 ]
         
         return weights
@@ -122,7 +122,7 @@ class NeuronVisualizer:
             for i in range(len(neuron_positions[layer_idx])):
                 for j in range(len(neuron_positions[layer_idx + 1])):
                     weight = weights[layer_idx][i][j]
-                    if abs(weight) > 0.1:  # Only draw significant weights
+                    if abs(weight) > 0.01:  # Only draw significant weights
                         start = neuron_positions[layer_idx][i]
                         end = neuron_positions[layer_idx + 1][j]
                         color = self.colors['positive_weight'] if weight > 0 else self.colors['negative_weight']
