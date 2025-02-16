@@ -25,7 +25,7 @@ class NeuronVisualizer:
         }
         
         # Network structure
-        self.layer_sizes = [8, 8, 8, 3]  # [input, hidden1, hidden2, output]
+        self.layer_sizes = [8, 8, 8, 2]  # [input, hidden1, hidden2, output]
         self.weights = self.load_weights()
         self.selected_colony = 1
         self.font = pygame.font.Font(None, 24)
