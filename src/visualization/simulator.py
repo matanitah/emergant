@@ -6,6 +6,8 @@ from config.settings import *
 from core.ant import Ant
 from core.food import Food
 from core.colony import Colony
+from core.neural_net import NeuralNetwork
+
 class Simulator:
     def __init__(self):
         pygame.init()
@@ -16,7 +18,7 @@ class Simulator:
             1: 0,
             2: 0
         }
-        self.colony1 = Colony(COLONY_1_POS[0], COLONY_1_POS[1], 1)  # Left side
+        self.colony1 = Colony(COLONY_1_POS[0], COLONY_1_POS[1], 1, [6,6,6])  # Left side
         self.colony2 = Colony(COLONY_2_POS[0],COLONY_2_POS[1], 2)  # Right side
 
         # Load weights before creating ants
@@ -136,57 +138,68 @@ class Simulator:
         pygame.quit()
 
     def save_weights(self):
-        """Saves the neural network weights for both colonies to text files."""
-        # Create weights directory if it doesn't exist
+        """Saves the neural network weights and architecture for both colonies to text files."""
         os.makedirs('weights', exist_ok=True)
         
         # Save weights for colony 1
-        with open(f'weights/colony1_weights.txt', 'w') as f:
-            f.write("Weights1:\n" + str(self.colony1.hivemind.weights1.tolist()) + "\n")
-            f.write("Weights2:\n" + str(self.colony1.hivemind.weights2.tolist()) + "\n")
-            f.write("Weights3:\n" + str(self.colony1.hivemind.weights3.tolist()))
-            
+        with open('weights/colony1_weights.txt', 'w') as f:
+            # Save layer sizes
+            f.write(f"LayerSizes:{self.colony1.hivemind.layer_sizes}\n")
+            # Save weights for each layer
+            for i, weights in enumerate(self.colony1.hivemind.weights):
+                f.write(f"Weights{i}:\n{weights.tolist()}\n")
+        
         # Save weights for colony 2
-        with open(f'weights/colony2_weights.txt', 'w') as f:
-            f.write("Weights1:\n" + str(self.colony2.hivemind.weights1.tolist()) + "\n")
-            f.write("Weights2:\n" + str(self.colony2.hivemind.weights2.tolist()) + "\n")
-            f.write("Weights3:\n" + str(self.colony2.hivemind.weights3.tolist()))
+        with open('weights/colony2_weights.txt', 'w') as f:
+            # Save layer sizes
+            f.write(f"LayerSizes:{self.colony2.hivemind.layer_sizes}\n")
+            # Save weights for each layer
+            for i, weights in enumerate(self.colony2.hivemind.weights):
+                f.write(f"Weights{i}:\n{weights.tolist()}\n")
 
     def load_weights(self):
-        """Loads neural network weights for both colonies from text files."""
+        """Loads neural network weights and architecture for both colonies from text files."""
         try:
             # Load weights for colony 1
             with open('weights/colony1_weights.txt', 'r') as f:
                 content = f.read()
-                # Extract each weight matrix
-                for i, prefix in enumerate(['Weights1:', 'Weights2:', 'Weights3:']):
+                
+                # Extract layer sizes
+                layer_start = content.find('LayerSizes:') + len('LayerSizes:')
+                layer_end = content.find('\n', layer_start)
+                layer_sizes = eval(content[layer_start:layer_end])
+                
+                # Initialize network with loaded architecture
+                self.colony1.hivemind = NeuralNetwork(layer_sizes)
+                
+                # Load weights for each layer
+                for i in range(len(layer_sizes) - 1):
+                    prefix = f'Weights{i}:'
                     start = content.find(prefix) + len(prefix)
-                    end = content.find('Weights', start) if i < 2 else len(content)
+                    end = content.find('Weights', start) if i < len(layer_sizes) - 2 else len(content)
                     weight_str = content[start:end].strip()
-                    weight_matrix = np.array(eval(weight_str))
-                    if i == 0:
-                        self.colony1.hivemind.weights1 = weight_matrix
-                    elif i == 1:
-                        self.colony1.hivemind.weights2 = weight_matrix
-                    else:
-                        self.colony1.hivemind.weights3 = weight_matrix
+                    self.colony1.hivemind.weights[i] = np.array(eval(weight_str))
 
             # Load weights for colony 2
             with open('weights/colony2_weights.txt', 'r') as f:
                 content = f.read()
-                # Extract each weight matrix
-                for i, prefix in enumerate(['Weights1:', 'Weights2:', 'Weights3:']):
+                
+                # Extract layer sizes
+                layer_start = content.find('LayerSizes:') + len('LayerSizes:')
+                layer_end = content.find('\n', layer_start)
+                layer_sizes = eval(content[layer_start:layer_end])
+                
+                # Initialize network with loaded architecture
+                self.colony2.hivemind = NeuralNetwork(layer_sizes)
+                
+                # Load weights for each layer
+                for i in range(len(layer_sizes) - 1):
+                    prefix = f'Weights{i}:'
                     start = content.find(prefix) + len(prefix)
-                    end = content.find('Weights', start) if i < 2 else len(content)
+                    end = content.find('Weights', start) if i < len(layer_sizes) - 2 else len(content)
                     weight_str = content[start:end].strip()
-                    weight_matrix = np.array(eval(weight_str))
-                    if i == 0:
-                        self.colony2.hivemind.weights1 = weight_matrix
-                    elif i == 1:
-                        self.colony2.hivemind.weights2 = weight_matrix
-                    else:
-                        self.colony2.hivemind.weights3 = weight_matrix
-                        
+                    self.colony2.hivemind.weights[i] = np.array(eval(weight_str))
+                    
         except FileNotFoundError:
             print("No weights files found. Starting with random weights.")
         except Exception as e:

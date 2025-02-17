@@ -1,52 +1,55 @@
 import numpy as np
 class NeuralNetwork:
-    def __init__(self, hidden_size1, hidden_size2):
-        input_size = 8  # State observations
-        output_size = 2  # [turn_left, turn_right]
-
-        # Initialize a feedforward neural network with two hidden layers
-        # The network architecture is: input_layer -> hidden_layer1 -> hidden_layer2 -> output_layer
+    def __init__(self, layer_sizes):
+        """
+        Initialize a feedforward neural network with variable hidden layers.
         
-        # weights1: Connects input layer to first hidden layer
-        self.weights1 = np.random.randn(input_size, hidden_size1) * 0.1
+        Args:
+            layer_sizes (list): List of integers representing the size of each layer.
+                              First element is input size, last element is output size,
+                              and elements in between are hidden layer sizes.
+        """
+        self.layer_sizes = layer_sizes
+        self.num_layers = len(layer_sizes)
         
-        # weights2: Connects first hidden layer to second hidden layer
-        self.weights2 = np.random.randn(hidden_size1, hidden_size2) * 0.1
+        # Initialize weights between all layers
+        self.weights = []
+        for i in range(self.num_layers - 1):
+            # Initialize weights with small random values
+            self.weights.append(
+                np.random.randn(layer_sizes[i], layer_sizes[i+1]) * 0.1
+            )
         
-        # weights3: Connects second hidden layer to output layer
-        self.weights3 = np.random.randn(hidden_size2, output_size) * 0.1
-        
+        # Storage for layer activations during forward pass
+        self.activations = []
+    
     def forward(self, x):
-        # Forward pass through the network
-        # Uses tanh activation function for all layers
+        # Store input
+        self.activations = [x]
         
-        # Store input for backpropagation
-        self.input = x
-        # Process through first hidden layer
-        self.hidden1 = np.tanh(np.dot(x, self.weights1))
-        # Process through second hidden layer
-        self.hidden2 = np.tanh(np.dot(self.hidden1, self.weights2))
-        # Process through output layer
-        self.output = np.tanh(np.dot(self.hidden2, self.weights3))
-        return self.output
+        # Forward propagate through each layer
+        current_activation = x
+        for weights in self.weights:
+            current_activation = np.tanh(np.dot(current_activation, weights))
+            self.activations.append(current_activation)
+            
+        return self.activations[-1]
     
     def update(self, learning_rate, gradient):
-        # Full backpropagation through all layers
-        # gradient is the initial error gradient at the output layer
+        # Start with output gradient
+        delta = gradient * (1 - np.square(self.activations[-1]))
         
-        # Backpropagate through output layer to hidden2
-        delta3 = gradient * (1 - np.square(self.output))  # derivative of tanh
-        weights3_gradient = np.outer(self.hidden2, delta3)
-        
-        # Backpropagate through hidden2 to hidden1
-        delta2 = np.dot(delta3, self.weights3.T) * (1 - np.square(self.hidden2))
-        weights2_gradient = np.outer(self.hidden1, delta2)
-        
-        # Backpropagate through hidden1 to input
-        delta1 = np.dot(delta2, self.weights2.T) * (1 - np.square(self.hidden1))
-        weights1_gradient = np.outer(self.input, delta1)
+        # Backpropagate through each layer
+        weight_gradients = []
+        for layer_idx in reversed(range(len(self.weights))):
+            # Calculate weight gradients
+            weight_gradient = np.outer(self.activations[layer_idx], delta)
+            weight_gradients.insert(0, weight_gradient)
+            
+            # Calculate delta for next layer
+            if layer_idx > 0:  # No need to calculate delta for input layer
+                delta = np.dot(delta, self.weights[layer_idx].T) * (1 - np.square(self.activations[layer_idx]))
         
         # Update all weights using their gradients
-        self.weights3 += learning_rate * weights3_gradient
-        self.weights2 += learning_rate * weights2_gradient
-        self.weights1 += learning_rate * weights1_gradient
+        for i in range(len(self.weights)):
+            self.weights[i] += learning_rate * weight_gradients[i]

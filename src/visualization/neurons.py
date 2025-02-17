@@ -24,33 +24,44 @@ class NeuronVisualizer:
             'negative_weight': (255, 0, 0)
         }
         
-        # Network structure
-        self.layer_sizes = [8, 8, 8, 2]  # [input, hidden1, hidden2, output]
+        # Network structure will be loaded from weights
         self.weights = self.load_weights()
         self.selected_colony = 1
         self.font = pygame.font.Font(None, 24)
         
     def load_weights(self):
         """Load weights from the saved files."""
-        weights = {'colony1': [], 'colony2': []}
+        weights = {'colony1': {'layer_sizes': None, 'weights': []}, 
+                  'colony2': {'layer_sizes': None, 'weights': []}}
         
         for colony in [1, 2]:
             try:
                 with open(f'weights/colony{colony}_weights.txt', 'r') as f:
                     content = f.read()
+                    
+                    # Extract layer sizes
+                    layer_start = content.find('LayerSizes:') + len('LayerSizes:')
+                    layer_end = content.find('\n', layer_start)
+                    layer_sizes = eval(content[layer_start:layer_end])
+                    weights[f'colony{colony}']['layer_sizes'] = layer_sizes
+                    
                     # Extract each weight matrix
-                    for i in range(1, 4):
-                        start = content.find(f"Weights{i}:\n") + len(f"Weights{i}:\n")
-                        end = content.find("Weights", start) if i < 3 else len(content)
+                    for i in range(len(layer_sizes) - 1):
+                        prefix = f'Weights{i}:'
+                        start = content.find(prefix) + len(prefix)
+                        end = content.find('Weights', start) if i < len(layer_sizes) - 2 else len(content)
                         weight_str = content[start:end].strip()
                         weight_matrix = np.array(ast.literal_eval(weight_str))
-                        weights[f'colony{colony}'].append(weight_matrix)
+                        weights[f'colony{colony}']['weights'].append(weight_matrix)
+                        
             except FileNotFoundError:
                 print(f"Warning: No weights file found for colony {colony}")
-                weights[f'colony{colony}'] = [
-                    np.zeros((8, 8)),
-                    np.zeros((8, 8)),
-                    np.zeros((8, 2))
+                # Default network structure if no file is found
+                default_sizes = [8, 8, 8, 2]
+                weights[f'colony{colony}']['layer_sizes'] = default_sizes
+                weights[f'colony{colony}']['weights'] = [
+                    np.zeros((default_sizes[i], default_sizes[i+1])) 
+                    for i in range(len(default_sizes)-1)
                 ]
         
         return weights
@@ -82,13 +93,16 @@ class NeuronVisualizer:
     def draw_network(self):
         self.screen.fill(self.colors['background'])
         
+        # Get current colony's layer sizes
+        layer_sizes = self.weights[f'colony{self.selected_colony}']['layer_sizes']
+        
         # Calculate positions
-        layer_spacing = self.width / (len(self.layer_sizes) + 1)
-        max_neurons = max(self.layer_sizes)
+        layer_spacing = self.width / (len(layer_sizes) + 1)
+        max_neurons = max(layer_sizes)
         neuron_positions = []
         
         # Draw neurons and store their positions
-        for layer_idx, layer_size in enumerate(self.layer_sizes):
+        for layer_idx, layer_size in enumerate(layer_sizes):
             neuron_spacing = self.height / (layer_size + 1)
             layer_positions = []
             
@@ -104,8 +118,8 @@ class NeuronVisualizer:
                     label = ["dist_colony", "angle_colony", "carrying_food", 
                             "phero_front", "phero_right", "phero_left",
                             "dist_food", "angle_food"][neuron_idx]
-                elif layer_idx == len(self.layer_sizes) - 1:
-                    label = ["turn_left", "turn_right", "drop_phero"][neuron_idx]
+                elif layer_idx == len(layer_sizes) - 1:
+                    label = ["turn_left", "turn_right"][neuron_idx]
                 else:
                     label = f"H{layer_idx}_{neuron_idx}"
                 
@@ -117,7 +131,7 @@ class NeuronVisualizer:
             neuron_positions.append(layer_positions)
         
         # Draw weights
-        weights = self.weights[f'colony{self.selected_colony}']
+        weights = self.weights[f'colony{self.selected_colony}']['weights']
         for layer_idx in range(len(weights)):
             for i in range(len(neuron_positions[layer_idx])):
                 for j in range(len(neuron_positions[layer_idx + 1])):
@@ -135,7 +149,6 @@ class NeuronVisualizer:
                             mid_y = (start[1] + end[1]) / 2
                             weight_text = self.font.render(f"{weight:.2f}", True, self.colors['text'])
                             text_rect = weight_text.get_rect(center=(mid_x, mid_y))
-                            # Add background for better readability
                             padding = 2
                             pygame.draw.rect(self.screen, self.colors['background'], 
                                            (text_rect.x - padding, text_rect.y - padding,
