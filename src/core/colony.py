@@ -5,12 +5,22 @@ class Colony:
         self.id = id
         self.x = x
         self.y = y
+
         self.food_count = 0
         self.total_food_collected = 0
+
         # Create layer sizes list: input_layer + hidden_layers + output_layer
         layer_sizes = [8] + hidden_sizes + [2]  # 8 inputs, 2 outputs
         self.hivemind = NeuralNetwork(layer_sizes)
+
+        # Health
+        self.colony_health = 100
     
+    def take_damage(self):
+        self.colony_health -= 1
+        if self.colony_health <= 0:
+            print("GAME OVER!")
+
     def increment_food(self):
         self.food_count += 1
         self.total_food_collected += 1

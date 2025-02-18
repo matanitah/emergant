@@ -4,6 +4,7 @@ import random
 import numpy as np
 from config.settings import *
 from core.worker_ant import WorkerAnt
+from core.soldier_ant import SoldierAnt
 from core.food import Food
 from core.colony import Colony
 from core.neural_net import NeuralNetwork
@@ -26,7 +27,12 @@ class Simulator:
 
         self.worker_ants_1 = [WorkerAnt(self.colony1, colony_id=1) for _ in range(ANT_COUNT_PER_COLONY)]
         self.worker_ants_2 = [WorkerAnt(self.colony2, colony_id=2) for _ in range(ANT_COUNT_PER_COLONY)]
-        self.ants = self.worker_ants_1 + self.worker_ants_2  # Combined list for easier iteration
+
+        self.soldier_ants_1 = []
+        self.soldier_ants_2 = []
+
+        self.worker_ants = self.worker_ants_1 + self.worker_ants_2  # Combined list for easier iteration
+        self.soldier_ants = self.soldier_ants_1 + self.soldier_ants_2
 
         self.food_sources = [Food() for _ in range(FOOD_COUNT)]
         self.pheromone_grid = np.zeros((WIDTH, HEIGHT))
@@ -36,9 +42,13 @@ class Simulator:
         # Remove dead ants
         self.worker_ants_1 = [ant for ant in self.worker_ants_1 if ant.is_alive]
         self.worker_ants_2 = [ant for ant in self.worker_ants_2 if ant.is_alive]
-        self.ants = self.worker_ants_1 + self.worker_ants_2
+        self.worker_ants = self.worker_ants_1 + self.worker_ants_2
 
-        for ant in self.ants:
+        self.soldier_ants_1 = [ant for ant in self.soldier_ants_1 if ant.is_alive]
+        self.soldier_ants_2 = [ant for ant in self.soldier_ants_2 if ant.is_alive]
+        self.soldier_ants = self.soldier_ants_1 + self.soldier_ants_2
+
+        for ant in self.worker_ants:
             ant.move(self.pheromone_grid, self.food_sources)
             ant.check_food(self.food_sources)
             
@@ -47,12 +57,18 @@ class Simulator:
             ant.check_colony(self.colony2)
                         
             # Combat: Check for nearby enemy ants
-            # self.check_combat(ant)
+        for ant in self.soldier_ants:
+            if ant.colony_id == 1:
+                ant.move(self.colony2, self.soldier_ants_2)
+            else:
+                ant.move(self.colony1, self.soldier_ants_1)
+            self.check_combat(ant)
+        
         self.handle_reproduction()
         self.pheromone_grid *= PHEROMONE_DECAY  # Pheromones decay over time
 
     def check_combat(self, ant):
-        enemy_ants = self.worker_ants_2 if ant.colony_id == 1 else self.worker_ants_1
+        enemy_ants = self.soldier_ants_2 if ant.colony_id == 1 else self.soldier_ants_1
         
         for enemy in enemy_ants:
             distance = np.sqrt((ant.x - enemy.x)**2 + (ant.y - enemy.y)**2)
@@ -68,25 +84,25 @@ class Simulator:
         current_time = pygame.time.get_ticks()
         
         # Check colony 1 reproduction
-        if (len(self.worker_ants_1) < MAX_ANTS_PER_COLONY and
+        if (len(self.soldier_ants) < MAX_SOLDIER_ANTS_PER_COLONY and
             current_time - self.last_reproduction[1] > REPRODUCTION_COOLDOWN and
-            self.colony1.food_count >= 5):  # Requires 5 food for reproduction
+            self.colony1.food_count >= 10):  # Requires 10 food for soldier ant production
             
-            self.colony1.food_count -= 5
-            new_ant = WorkerAnt(self.colony1, colony_id=1)
-            self.worker_ants_1.append(new_ant)
-            self.ants = self.worker_ants_1 + self.worker_ants_2
+            self.colony1.food_count -= 10
+            new_ant = SoldierAnt(self.colony1, colony_id=1)
+            self.soldier_ants_1.append(new_ant)
+            self.soldier_ants = self.soldier_ants_1 + self.soldier_ants_2
             self.last_reproduction[1] = current_time
         
         # Check colony 2 reproduction
-        if (len(self.worker_ants_2) < MAX_ANTS_PER_COLONY and 
+        if (len(self.soldier_ants_2) < MAX_SOLDIER_ANTS_PER_COLONY and 
             current_time - self.last_reproduction[2] > REPRODUCTION_COOLDOWN and
-            self.colony2.food_count >= 5):  # Requires 5 food for reproduction
+            self.colony2.food_count >= 10):  # Requires 5 food for reproduction
             
-            self.colony2.food_count -= 5
-            new_ant = WorkerAnt(self.colony2, colony_id=2)
-            self.worker_ants_2.append(new_ant)
-            self.ants = self.worker_ants_1 + self.worker_ants_2
+            self.colony2.food_count -= 10
+            new_ant = SoldierAnt(self.colony2, colony_id=2)
+            self.soldier_ants_2.append(new_ant)
+            self.soldier_ants = self.soldier_ants_1 + self.soldier_ants_2
             self.last_reproduction[2] = current_time
 
     def draw(self):
@@ -109,19 +125,52 @@ class Simulator:
         colony2_text = font.render(f"Colony 2: {self.colony2.total_food_collected}", True, COLORS['RED'])
         self.screen.blit(colony1_text, (10, 10))  # Top left
         self.screen.blit(colony2_text, (10, 50))  # Below colony 1 text
+        # Draw health bars for colonies
+        # Colony 1 health bar
+        health_bar_width = 50
+        health_bar_height = 5
+        health_percentage_1 = self.colony1.colony_health / 100
+        pygame.draw.rect(self.screen, COLORS['RED'], 
+                        (self.colony1.x - health_bar_width//2, 
+                         self.colony1.y - Colony.size - 10,
+                         health_bar_width, health_bar_height))
+        pygame.draw.rect(self.screen, COLORS['GREEN'],
+                        (self.colony1.x - health_bar_width//2,
+                         self.colony1.y - Colony.size - 10,
+                         health_bar_width * health_percentage_1, health_bar_height))
+
+        # Colony 2 health bar
+        health_percentage_2 = self.colony2.colony_health / 100
+        pygame.draw.rect(self.screen, COLORS['RED'],
+                        (self.colony2.x - health_bar_width//2,
+                         self.colony2.y - Colony.size - 10,
+                         health_bar_width, health_bar_height))
+        pygame.draw.rect(self.screen, COLORS['GREEN'],
+                        (self.colony2.x - health_bar_width//2,
+                         self.colony2.y - Colony.size - 10,
+                         health_bar_width * health_percentage_2, health_bar_height))
         
         # Draw food
         for food in self.food_sources:
             pygame.draw.circle(self.screen, COLORS['YELLOW'], (food.x, food.y), food.size)
         
         # Draw ants with colony-specific colors
-        for ant in self.ants:
+        for ant in self.worker_ants:
             if ant.is_alive:
                 if ant.colony_id == 1:
                     color = COLORS['GREEN'] if ant.carrying_food else COLORS['BLUE']
                 else:
                     color = COLORS['ORANGE'] if ant.carrying_food else COLORS['BROWN']
-                pygame.draw.circle(self.screen, color, (int(ant.x), int(ant.y)), 2)
+                pygame.draw.circle(self.screen, color, (int(ant.x), int(ant.y)), WORKER_ANT_SIZE)
+        
+        # Draw soldier ants with colony-specific colors
+        for ant in self.soldier_ants:
+            if ant.is_alive:
+                if ant.colony_id == 1:
+                    color = COLORS['LIGHT_BLUE']
+                else:
+                    color = COLORS['RED']
+                pygame.draw.circle(self.screen, color, (int(ant.x), int(ant.y)), SOLDIER_ANT_SIZE)
         
         pygame.display.flip()
 
