@@ -3,7 +3,7 @@ import pygame
 import random
 import numpy as np
 from config.settings import *
-from core.ant import Ant
+from core.worker_ant import WorkerAnt
 from core.food import Food
 from core.colony import Colony
 from core.neural_net import NeuralNetwork
@@ -24,9 +24,9 @@ class Simulator:
         # Load weights before creating ants
         self.load_weights()
 
-        self.ants1 = [Ant(self.colony1, colony_id=1) for _ in range(ANT_COUNT_PER_COLONY)]
-        self.ants2 = [Ant(self.colony2, colony_id=2) for _ in range(ANT_COUNT_PER_COLONY)]
-        self.ants = self.ants1 + self.ants2  # Combined list for easier iteration
+        self.worker_ants_1 = [WorkerAnt(self.colony1, colony_id=1) for _ in range(ANT_COUNT_PER_COLONY)]
+        self.worker_ants_2 = [WorkerAnt(self.colony2, colony_id=2) for _ in range(ANT_COUNT_PER_COLONY)]
+        self.ants = self.worker_ants_1 + self.worker_ants_2  # Combined list for easier iteration
 
         self.food_sources = [Food() for _ in range(FOOD_COUNT)]
         self.pheromone_grid = np.zeros((WIDTH, HEIGHT))
@@ -34,9 +34,9 @@ class Simulator:
 
     def update(self):
         # Remove dead ants
-        self.ants1 = [ant for ant in self.ants1 if ant.is_alive]
-        self.ants2 = [ant for ant in self.ants2 if ant.is_alive]
-        self.ants = self.ants1 + self.ants2
+        self.worker_ants_1 = [ant for ant in self.worker_ants_1 if ant.is_alive]
+        self.worker_ants_2 = [ant for ant in self.worker_ants_2 if ant.is_alive]
+        self.ants = self.worker_ants_1 + self.worker_ants_2
 
         for ant in self.ants:
             ant.move(self.pheromone_grid, self.food_sources)
@@ -52,7 +52,7 @@ class Simulator:
         self.pheromone_grid *= PHEROMONE_DECAY  # Pheromones decay over time
 
     def check_combat(self, ant):
-        enemy_ants = self.ants2 if ant.colony_id == 1 else self.ants1
+        enemy_ants = self.worker_ants_2 if ant.colony_id == 1 else self.worker_ants_1
         
         for enemy in enemy_ants:
             distance = np.sqrt((ant.x - enemy.x)**2 + (ant.y - enemy.y)**2)
@@ -68,25 +68,25 @@ class Simulator:
         current_time = pygame.time.get_ticks()
         
         # Check colony 1 reproduction
-        if (len(self.ants1) < MAX_ANTS_PER_COLONY and
+        if (len(self.worker_ants_1) < MAX_ANTS_PER_COLONY and
             current_time - self.last_reproduction[1] > REPRODUCTION_COOLDOWN and
             self.colony1.food_count >= 5):  # Requires 5 food for reproduction
             
             self.colony1.food_count -= 5
-            new_ant = Ant(self.colony1, colony_id=1)
-            self.ants1.append(new_ant)
-            self.ants = self.ants1 + self.ants2
+            new_ant = WorkerAnt(self.colony1, colony_id=1)
+            self.worker_ants_1.append(new_ant)
+            self.ants = self.worker_ants_1 + self.worker_ants_2
             self.last_reproduction[1] = current_time
         
         # Check colony 2 reproduction
-        if (len(self.ants2) < MAX_ANTS_PER_COLONY and 
+        if (len(self.worker_ants_2) < MAX_ANTS_PER_COLONY and 
             current_time - self.last_reproduction[2] > REPRODUCTION_COOLDOWN and
             self.colony2.food_count >= 5):  # Requires 5 food for reproduction
             
             self.colony2.food_count -= 5
-            new_ant = Ant(self.colony2, colony_id=2)
-            self.ants2.append(new_ant)
-            self.ants = self.ants1 + self.ants2
+            new_ant = WorkerAnt(self.colony2, colony_id=2)
+            self.worker_ants_2.append(new_ant)
+            self.ants = self.worker_ants_1 + self.worker_ants_2
             self.last_reproduction[2] = current_time
 
     def draw(self):

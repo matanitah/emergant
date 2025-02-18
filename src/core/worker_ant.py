@@ -3,7 +3,7 @@ import numpy as np
 from config.settings import *
 from core.colony import Colony
 
-class Ant:
+class WorkerAnt:
     def __init__(self, colony, colony_id):
         self.x = colony.x
         self.y = colony.y
@@ -103,7 +103,7 @@ class Ant:
             
         # Reward for successfully returning food to colony
         if self.carrying_food and np.hypot(self.x - self.colony_x, self.y - self.colony_y) < Colony.size:
-            reward += 100.0
+            reward += 500.0
             
         # When carrying food: reward/penalty based on angle to colony
         if self.carrying_food:
