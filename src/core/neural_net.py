@@ -1,6 +1,6 @@
 import numpy as np
 class NeuralNetwork:
-    def __init__(self, layer_sizes):
+    def __init__(self, hidden_sizes):
         """
         Initialize a feedforward neural network with variable hidden layers.
         
@@ -9,15 +9,16 @@ class NeuralNetwork:
                               First element is input size, last element is output size,
                               and elements in between are hidden layer sizes.
         """
-        self.layer_sizes = layer_sizes
-        self.num_layers = len(layer_sizes)
+        self.hidden_sizes = hidden_sizes
+        self.layer_sizes = [8] + hidden_sizes + [2]  # 8 inputs, 2 outputs
+        self.num_layers = len(self.layer_sizes)
         
         # Initialize weights between all layers
         self.weights = []
         for i in range(self.num_layers - 1):
             # Initialize weights with small random values
             self.weights.append(
-                np.random.randn(layer_sizes[i], layer_sizes[i+1]) * 0.1
+                np.random.randn(self.layer_sizes[i], self.layer_sizes[i+1]) * 0.1
             )
         
         # Storage for layer activations during forward pass

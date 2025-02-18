@@ -33,6 +33,11 @@ class Simulator:
         self.running = True
 
     def update(self):
+        # First check if we should end the game
+        if len(self.food_sources) == 0:
+            self.handle_end_game()
+            return
+        
         # Remove dead ants
         self.worker_ants_1 = [ant for ant in self.worker_ants_1 if ant.is_alive]
         self.worker_ants_2 = [ant for ant in self.worker_ants_2 if ant.is_alive]
@@ -205,3 +210,37 @@ class Simulator:
         except Exception as e:
             print(f"Error loading weights: {e}")
             print("Starting with random weights.")
+
+    def handle_end_game(self):
+        print("GAME OVER!!!")
+        # Determine winner
+        if self.colony1.total_food_collected > self.colony2.total_food_collected:
+            winner, loser = self.colony1, self.colony2
+        else:
+            winner, loser = self.colony2, self.colony1
+        
+        print(f"WINNER is COLONY {winner.id} with {winner.hivemind.num_layers - 2} hidden layers of sizes {winner.hivemind.hidden_sizes}")
+        
+        # Mutate the loser's neural network
+        # loser.mutate()
+        # winner.init_hivemind()
+        
+        # Reset the game
+        self.reset_game()
+        
+    def reset_game(self):
+        # Reset food sources
+        self.food_sources = [Food() for _ in range(FOOD_COUNT)]
+        
+        # Reset colony food counts
+        self.colony1.food_count = 0
+        self.colony2.food_count = 0
+        self.colony1.total_food_collected = 0
+        self.colony2.total_food_collected = 0
+        
+        # Reset ants
+        self.worker_ants_1 = [WorkerAnt(self.colony1, colony_id=1) 
+                             for _ in range(ANT_COUNT_PER_COLONY)]
+        self.worker_ants_2 = [WorkerAnt(self.colony2, colony_id=2) 
+                             for _ in range(ANT_COUNT_PER_COLONY)]
+        self.ants = self.worker_ants_1 + self.worker_ants_2
