@@ -31,6 +31,7 @@ class Simulator:
         self.food_sources = [Food() for _ in range(FOOD_COUNT)]
         self.pheromone_grid = np.zeros((WIDTH, HEIGHT))
         self.running = True
+        self.generation = 1
 
     def update(self):
         # First check if we should end the game
@@ -147,7 +148,7 @@ class Simulator:
         os.makedirs('weights', exist_ok=True)
         
         # Save weights for colony 1
-        with open('weights/colony1_weights.txt', 'w') as f:
+        with open(f'weights/colony1_weights_{self.generation}.txt', 'w') as f:
             # Save layer sizes
             f.write(f"LayerSizes:{self.colony1.hivemind.layer_sizes}\n")
             # Save weights for each layer
@@ -155,7 +156,7 @@ class Simulator:
                 f.write(f"Weights{i}:\n{weights.tolist()}\n")
         
         # Save weights for colony 2
-        with open('weights/colony2_weights.txt', 'w') as f:
+        with open(f'weights/colony2_weights_{self.generation}.txt', 'w') as f:
             # Save layer sizes
             f.write(f"LayerSizes:{self.colony2.hivemind.layer_sizes}\n")
             # Save weights for each layer
@@ -165,8 +166,18 @@ class Simulator:
     def load_weights(self):
         """Loads neural network weights and architecture for both colonies from text files."""
         try:
+            # Find the highest generation number from existing weight files
+            generation = 0
+            if os.path.exists('weights'):
+                weight_files = os.listdir('weights')
+                for file in weight_files:
+                    if file.startswith('colony1_weights_') and file.endswith('.txt'):
+                        gen = int(file.split('_')[-1].split('.')[0])
+                        generation = max(generation, gen)
+            self.generation = generation
+            print(f"Starting at generation {self.generation}")
             # Load weights for colony 1
-            with open('weights/colony1_weights.txt', 'r') as f:
+            with open(f'weights/colony1_weights_{generation}.txt', 'r') as f:
                 content = f.read()
                 
                 # Extract layer sizes
@@ -186,7 +197,7 @@ class Simulator:
                     self.colony1.hivemind.weights[i] = np.array(eval(weight_str))
 
             # Load weights for colony 2
-            with open('weights/colony2_weights.txt', 'r') as f:
+            with open(f'weights/colony2_weights_{generation}.txt', 'r') as f:
                 content = f.read()
                 
                 # Extract layer sizes
@@ -221,12 +232,15 @@ class Simulator:
         
         print(f"WINNER is COLONY {winner.id} with {winner.hivemind.num_layers - 2} hidden layers of sizes {winner.hivemind.hidden_sizes}")
         
+        self.save_weights()
+
         # Mutate the loser's neural network
-        # loser.mutate()
-        # winner.init_hivemind()
+        loser.mutate()
+        winner.init_hivemind()
         
         # Reset the game
         self.reset_game()
+        self.generation += 1
         
     def reset_game(self):
         # Reset food sources

@@ -4,7 +4,7 @@ import ast
 import os
 
 class NeuronVisualizer:
-    def __init__(self, width=1200, height=600):
+    def __init__(self, generation, width=1200, height=600):
         pygame.init()
         self.width = width
         self.height = height
@@ -25,18 +25,18 @@ class NeuronVisualizer:
         }
         
         # Network structure will be loaded from weights
-        self.weights = self.load_weights()
+        self.weights = self.load_weights(generation)
         self.selected_colony = 1
         self.font = pygame.font.Font(None, 24)
         
-    def load_weights(self):
+    def load_weights(self, generation):
         """Load weights from the saved files."""
         weights = {'colony1': {'layer_sizes': None, 'weights': []}, 
                   'colony2': {'layer_sizes': None, 'weights': []}}
         
         for colony in [1, 2]:
             try:
-                with open(f'weights/colony{colony}_weights.txt', 'r') as f:
+                with open(f'weights/colony{colony}_weights_{generation}.txt', 'r') as f:
                     content = f.read()
                     
                     # Extract layer sizes
@@ -182,5 +182,5 @@ class NeuronVisualizer:
         pygame.quit()
 
 if __name__ == "__main__":
-    visualizer = NeuronVisualizer()
+    visualizer = NeuronVisualizer(generation=1)
     visualizer.run()
