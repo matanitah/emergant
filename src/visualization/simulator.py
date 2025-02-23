@@ -7,13 +7,22 @@ from core.worker_ant import WorkerAnt
 from core.food import Food
 from core.colony import Colony
 from core.neural_net import NeuralNetwork
+import pufferlib
+import gymnasium as gym
 
-class Simulator:
+def sim_creator(*args, **kwargs):
+    return Simulator()
+
+
+class Simulator(pufferlib.PufferEnv):
     def __init__(self):
         pygame.init()
         pygame.font.init()
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         self.clock = pygame.time.Clock()
+        self.num_agents = 1
+        self.single_observation_space = gym.spaces.Box(low=0, high=1, shape=(WIDTH, HEIGHT, 2), dtype=np.float32)
+        self.single_action_space = gym.spaces.Discrete(2)
         self.last_reproduction = {
             1: 0,
             2: 0
@@ -33,7 +42,7 @@ class Simulator:
         self.running = True
         self.generation = 1
 
-    def update(self):
+    def step(self):
         # First check if we should end the game
         if len(self.food_sources) == 0:
             self.handle_end_game()
@@ -95,7 +104,7 @@ class Simulator:
             self.ants = self.worker_ants_1 + self.worker_ants_2
             self.last_reproduction[2] = current_time
 
-    def draw(self):
+    def render(self):
         self.screen.fill(COLORS['BLACK'])
         
         # Draw pheromones
@@ -131,17 +140,17 @@ class Simulator:
         
         pygame.display.flip()
 
-    def run(self):
-        while self.running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.save_weights()
-                    self.running = False
+    # def run(self):
+    #     while self.running:
+    #         for event in pygame.event.get():
+    #             if event.type == pygame.QUIT:
+    #                 self.save_weights()
+    #                 self.running = False
             
-            self.update()
-            self.draw()
+    #         self.update()
+    #         self.draw()
 
-        pygame.quit()
+        # pygame.quit()
 
     def save_weights(self):
         """Saves the neural network weights and architecture for both colonies to text files."""
@@ -242,7 +251,7 @@ class Simulator:
         self.reset_game()
         self.generation += 1
         
-    def reset_game(self):
+    def reset(self, seed=None):
         # Reset food sources
         self.food_sources = [Food() for _ in range(FOOD_COUNT)]
         
@@ -258,3 +267,4 @@ class Simulator:
         self.worker_ants_2 = [WorkerAnt(self.colony2, colony_id=2) 
                              for _ in range(ANT_COUNT_PER_COLONY)]
         self.ants = self.worker_ants_1 + self.worker_ants_2
+        return self.single_observation_space, {}
