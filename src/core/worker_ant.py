@@ -116,15 +116,13 @@ class WorkerAnt:
             angle_reward = (np.pi - angle_diff) / np.pi  # Ranges from 1 (facing colony) to -1 (facing away)
             reward += 0.5 * angle_reward
             
-            # Existing distance-based penalties/rewards
+            # Distance improvement-based rewards/penalties
             dist_to_colony = np.hypot(self.x - self.colony_x, self.y - self.colony_y)
-            reward -= 0.1 * (dist_to_colony / np.hypot(WIDTH, HEIGHT))
-            
             if len(self.reward_history) > 0:
                 prev_state = self.get_state(pheromone_grid, food_sources)
                 prev_colony_dist = prev_state[0] * np.hypot(WIDTH, HEIGHT)  # Unnormalize the distance
                 dist_improvement = prev_colony_dist - dist_to_colony
-                reward += 0.2 * dist_improvement  # Reward for getting closer to colony
+                reward += 0.2 * dist_improvement  # Reward/penalty for getting closer to colony
         
         # When not carrying food: reward/penalty based on angle to nearest visible food
         else:
