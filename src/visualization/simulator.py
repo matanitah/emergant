@@ -186,7 +186,7 @@ class Simulator:
                 layer_sizes = eval(content[layer_start:layer_end])
                 
                 # Initialize network with loaded architecture
-                self.colony1.hivemind = NeuralNetwork(layer_sizes)
+                self.colony1.hivemind = NeuralNetwork(layer_sizes[1:-1])
                 
                 # Load weights for each layer
                 for i in range(len(layer_sizes) - 1):
@@ -206,7 +206,7 @@ class Simulator:
                 layer_sizes = eval(content[layer_start:layer_end])
                 
                 # Initialize network with loaded architecture
-                self.colony2.hivemind = NeuralNetwork(layer_sizes)
+                self.colony2.hivemind = NeuralNetwork(layer_sizes[1:-1])
                 
                 # Load weights for each layer
                 for i in range(len(layer_sizes) - 1):

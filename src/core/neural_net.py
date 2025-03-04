@@ -9,6 +9,7 @@ class NeuralNetwork:
                               First element is input size, last element is output size,
                               and elements in between are hidden layer sizes.
         """
+        print(f"Initializing neural net with hidden layers: {hidden_sizes}")
         self.hidden_sizes = hidden_sizes
         self.layer_sizes = [8] + hidden_sizes + [2]  # 8 inputs, 2 outputs
         self.num_layers = len(self.layer_sizes)
