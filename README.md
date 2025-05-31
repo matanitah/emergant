@@ -2,7 +2,7 @@
 _A world of tiny creatures, driven by simple rules, yet creating complex societies._
 
 ## 🎯 **About**  
-**Emergant** is an ant colony simulator built with **PyGame**, where **reinforcement learning** drives the emergence of lifelike ant behaviors. Watch as virtual ants forage for food, defend their nests, and adapt their strategies over time—all without explicit scripting of their behaviors!
+**Emergant** is an ant colony simulator built with **PyGame**, where **reinforcement learning** and **neuro-evolution** drives the emergence of lifelike ant behaviors. Watch as virtual ants forage for food, defend their nests, and adapt their strategies over time—all without explicit scripting of their behaviors!
 
 ## **How It Works**  
 - **🌱 Reinforcement Learning** – Ants from the same colony are all collected by one hivemind, and learn to bring food back to their colony using a system of rewards and penalties.
