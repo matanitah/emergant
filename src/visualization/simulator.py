@@ -116,6 +116,13 @@ class Simulator:
         self.screen.blit(colony1_text, (10, 10))  # Top left
         self.screen.blit(colony2_text, (10, 50))  # Below colony 1 text
         
+        # Display FPS
+        fps = self.clock.get_fps()
+        fps_text = font.render(f"FPS: {fps}", True, COLORS['WHITE'])
+        fps_rect = fps_text.get_rect()
+        fps_rect.topright = (WIDTH - 10, 10)  # Position in top-right corner
+        self.screen.blit(fps_text, fps_rect)
+        
         # Draw food
         for food in self.food_sources:
             pygame.draw.circle(self.screen, COLORS['YELLOW'], (food.x, food.y), food.size)
@@ -140,6 +147,7 @@ class Simulator:
             
             self.update()
             self.draw()
+            self.clock.tick(60)  # Limit to 60 FPS and update the clock
 
         pygame.quit()
 
